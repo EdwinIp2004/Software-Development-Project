@@ -26,27 +26,56 @@ Each sprint produces a working version of the game that can be tested.
 ### Schedule (Agile Sprints)
 | Sprint | Goals | Status |
 |--------|-------|--------|
-| 1      | [FILL IN LATER] | [Planned / Done]|
-| 2      | [FILL IN LATER] | [Planned / Done]|
-| 3      | [FILL IN LATER] | [Planned / Done]|
-| 4      | [FILL IN LATER] | [Planned / Done]|
+| 1      | Basic 3 match grid | Completed |
+| 2      | Animation system | Completed |
+| 3      | Scoring system and meun | Planned |
+| 4      | Polish, bug fixing, final assets and testing | Planned |
 
 ### Algorithm
-**1. [FILL IN LATER: Algorithm Name 1]** (Describe here)
+**1. Match Detection & Chain Reaction**  
+Scans the entire grid for three or more identical gems horizontally or vertically.
+```python
+def check_matches():
+    matches = set()
+    # Horizontal check
+    for r in range(GRID_SIZE):
+        for c in range(GRID_SIZE - 2):
+            if grid[r][c] != -1 and grid[r][c] == grid[r][c+1] == grid[r][c+2]:
+                matches.update([(r, c), (r, c+1), (r, c+2)])
+    # Vertical check
+    for r in range(GRID_SIZE - 2):
+        for c in range(GRID_SIZE):
+            if grid[r][c] != -1 and grid[r][c] == grid[r+1][c] == grid[r+2][c]:
+                matches.update([(r, c), (r+1, c), (r+2, c)])
+    return list(matches)
+```
 
-### Current Status of Your Software
-We start the project now
+2. Match Processing & Gravity
+Removes matched gems, applies gravity, and refills the grid with new gems. Handling combo, flashing white animation, and falling animations.
+```python
+def process_matches_and_gravity():
+    """Handling combo, flashing white animation, and falling animations"""
+    while True:
+        matched = check_matches()
+        if not matched: break
+        # White flash → remove → gravity → refill
+        # (full animation and logic implemented)
+```
+
+### Current Status of The Software
+The pilot/demo version is complete and fully playable. The game has an 8×8 grid with clickable gems, swap mechanics, match detection, removal animations, gravity, and automatic refilling. The core gameplay loop works smoothly.
 
 ### Future Plan
-- Playable game
+- Add scoring system and level progression
+- Add main menu, level select, etc.
 
 ## 3. Demo
 - YouTube URL: [FILL IN LATER]
 
 ## 4. Development & Running Environment
-- Programming language: [FILL IN LATER]
-- Minimum requirements: [FILL IN LATER]
-- Required packages: [FILL IN LATER]
+- Programming language: Python 3 + Pygame
+- Minimum requirements: Any standard laptop with Python 3 installed
+- Required packages: pygame
 
 ## 5. Declaration
 - [FILL IN LATER]
