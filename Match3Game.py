@@ -1,143 +1,166 @@
 import pygame
 import random
-import math
 
-# Initialization settings
+# 1. Basic Configuration
 WIDTH, HEIGHT = 600, 600
 GRID_SIZE = 8
 CELL_SIZE = WIDTH // GRID_SIZE
+COLORS = [
+    (255, 50, 50),   # Red
+    (255, 255, 50),  # Yellow
+    (50, 50, 255),   # Blue
+    (50, 255, 50)    # Green
+]
+
+pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Match3Game")
 
-# Define colors (R, G, B)
-COLORS = [(255, 0, 0), (255, 255, 0), (0, 0, 255), (0, 255, 0)]
-
-# Initialize the map: Randomly generate numbers from 0 to 3
+# Initialize the mesh
 grid = [[random.randint(0, 3) for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 
-def draw_grid():
-    # Traverse an 8x8 grid
-    for row in range(GRID_SIZE):
-        for col in range(GRID_SIZE):
-            if grid[row][col] == -1:
-                continue
-            # 1. Calculate the coordinates of the top-left corner of the current cell, used to draw the background line
-            rect_x = col * CELL_SIZE
-            rect_y = row * CELL_SIZE
-            
-            # Draw dark gray grid lines (set the color to (50, 50, 50))
-            # Parameter 1 represents the line width, so only the outline is drawn and no fill is applied
-            pygame.draw.rect(screen, (50, 50, 50), (rect_x, rect_y, CELL_SIZE, CELL_SIZE), 1)
-            
-            # 2. Calculate the center point of the square shape.
-            x = rect_x + CELL_SIZE // 2
-            y = rect_y + CELL_SIZE // 2
-            
-            # Get the color and shape type of the current cell
-            color = COLORS[grid[row][col]]
-            shape_type = grid[row][col]
-            
-            # 3. Draw the shape according to your required functional specifications [cite: 36, 40]
-            if shape_type == 0: # Red - Circle
-                pygame.draw.circle(screen, color, (x, y), CELL_SIZE // 3)
-                
-            elif shape_type == 1: # Yellow - Square
-                size = CELL_SIZE // 1.5
-                pygame.draw.rect(screen, color, (x - size//2, y - size//2, size, size))
-                
-            elif shape_type == 2: # Blue - Triangle
-                # Calculate the three vertices of a triangle
-                points = [
-                    (x, y - CELL_SIZE//3),                # Top
-                    (x - CELL_SIZE//3, y + CELL_SIZE//3), # Bottom Left
-                    (x + CELL_SIZE//3, y + CELL_SIZE//3)  # Bottom right
-                ]
-                pygame.draw.polygon(screen, color, points)
-                
-            elif shape_type == 3: # Green - Regular Hexagon
-                points = []
-                for i in range(6):
-                    # One vertex every 60 degrees
-                    angle = i * math.pi / 3
-                    px = x + (CELL_SIZE // 3) * math.cos(angle)
-                    py = y + (CELL_SIZE // 3) * math.sin(angle)
-                    points.append((px, py))
-                pygame.draw.polygon(screen, color, points)
+# --- Core Plotting Auxiliary Functions ---
+def draw_shape(shape_type, x, y, size_scale=1.0):
+    """Draw a graphic at specified coordinates"""
+    if shape_type == -1: return
+    color = COLORS[shape_type]
+    size = (CELL_SIZE // 1.5) * size_scale
+    
+    if shape_type == 0: # Circle
+        pygame.draw.circle(screen, color, (int(x), int(y)), int(size // 2))
+    elif shape_type == 1: # Square
+        pygame.draw.rect(screen, color, (int(x - size//2), int(y - size//2), int(size), int(size)))
+    elif shape_type == 2: # Triangle
+        pts = [(x, y - size//2), (x - size//2, y + size//2), (x + size//2, y + size//2)]
+        pygame.draw.polygon(screen, color, pts)
+    elif shape_type == 3: # Hexagon
+        pts = []
+        for i in range(6):
+            angle = i * 3.14159 / 3
+            pts.append((x + (size//2) * pygame.math.Vector2(1, 0).rotate_rad(angle).x, 
+                        y + (size//2) * pygame.math.Vector2(1, 0).rotate_rad(angle).y))
+        pygame.draw.polygon(screen, color, pts)
 
+def draw_background(ignore_cells=None):
+    """Draw background lines and non-animated blocks"""
+    if ignore_cells is None: ignore_cells = []
+    screen.fill((30, 30, 30))
+    for r in range(GRID_SIZE):
+        for c in range(GRID_SIZE):
+            rect_x, rect_y = c * CELL_SIZE, r * CELL_SIZE
+            pygame.draw.rect(screen, (50, 50, 50), (rect_x, rect_y, CELL_SIZE, CELL_SIZE), 1)
+            if (r, c) not in ignore_cells:
+                draw_shape(grid[r][c], rect_x + CELL_SIZE//2, rect_y + CELL_SIZE//2)
+
+# --- Core Algorithm Functions ---
 def check_matches():
     matches = set()
-    # Lateral inspection
     for r in range(GRID_SIZE):
         for c in range(GRID_SIZE - 2):
             if grid[r][c] != -1 and grid[r][c] == grid[r][c+1] == grid[r][c+2]:
                 matches.update([(r, c), (r, c+1), (r, c+2)])
-    # Vertical inspection
     for r in range(GRID_SIZE - 2):
         for c in range(GRID_SIZE):
             if grid[r][c] != -1 and grid[r][c] == grid[r+1][c] == grid[r+2][c]:
                 matches.update([(r, c), (r+1, c), (r+2, c)])
     return list(matches)
 
-def apply_gravity():
-    # Traverse each column
-    for c in range(GRID_SIZE):
-        # Extract all non--1 squares in the current column
-        column_elements = [grid[r][c] for r in range(GRID_SIZE) if grid[r][c] != -1]
-        
-        # Calculate how many new blocks are needed
-        new_elements = [random.randint(0, 3) for _ in range(GRID_SIZE - len(column_elements))]
-        
-        # Merge: The top is the newly generated area, and the bottom is the dropped area
-        new_column = new_elements + column_elements
-        
-        # Write the new column back to grid
-        for r in range(GRID_SIZE):
-            grid[r][c] = new_column[r]
+def has_possible_moves():
+    """Check if a solution exists"""
+    for r in range(GRID_SIZE):
+        for c in range(GRID_SIZE):
+            for dr, dc in [(0,1), (1,0)]:
+                nr, nc = r + dr, c + dc
+                if nr < GRID_SIZE and nc < GRID_SIZE:
+                    grid[r][c], grid[nr][nc] = grid[nr][nc], grid[r][c]
+                    found = check_matches()
+                    grid[r][c], grid[nr][nc] = grid[nr][nc], grid[r][c]
+                    if found: return True
+    return False
 
+# --- Animation Functions ---
+def animate_swap(r1, c1, r2, c2):
+    frames = 10
+    for i in range(frames + 1):
+        p = i / frames
+        draw_background(ignore_cells=[(r1, c1), (r2, c2)])
+        # Block 1 coordinates
+        x1 = (c1 + (c2 - c1) * p) * CELL_SIZE + CELL_SIZE // 2
+        y1 = (r1 + (r2 - r1) * p) * CELL_SIZE + CELL_SIZE // 2
+        # Block 2 coordinates
+        x2 = (c2 + (c1 - c2) * p) * CELL_SIZE + CELL_SIZE // 2
+        y2 = (r2 + (r1 - r2) * p) * CELL_SIZE + CELL_SIZE // 2
+        draw_shape(grid[r1][c1], x1, y1)
+        draw_shape(grid[r2][c2], x2, y2)
+        pygame.display.flip()
+        pygame.time.delay(20)
 
-# Define variables before the while loop
-selected_cell = None  # Record the first click (row, col)
+def process_matches_and_gravity():
+    """Handling combo, flashing white animation, and falling animations"""
+    while True:
+        matched = check_matches()
+        if not matched: break
+        
+       # 1. White flash animation
+        draw_background()
+        for (r, c) in matched:
+            pygame.draw.rect(screen, (255, 255, 255), (c*CELL_SIZE, r*CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        pygame.display.flip()
+        pygame.time.delay(150)
+        
+        # 2. Logic eliminated and briefly turns black
+        for (r, c) in matched: grid[r][c] = -1
+        draw_background()
+        pygame.display.flip()
+        pygame.time.delay(100)
+        
+        #3. Drop Logic and Supplements
+        for c in range(GRID_SIZE):
+            col_data = [grid[r][c] for r in range(GRID_SIZE) if grid[r][c] != -1]
+            missing = GRID_SIZE - len(col_data)
+            new_elements = [random.randint(0, 3) for _ in range(missing)]
+            final_col = new_elements + col_data
+            for r in range(GRID_SIZE): grid[r][c] = final_col[r]
+            
+        draw_background()
+        pygame.display.flip()
+        pygame.time.delay(200)
 
+# --- Main Loop ---
+selected = None
 running = True
 while running:
-    screen.fill((30, 30, 30))
-    draw_grid()
+    draw_background()
     pygame.display.flip()
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-            
-        # --- Mouse Click Logic ---
+        
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
-            col = x // CELL_SIZE
-            row = y // CELL_SIZE
+            c, r = x // CELL_SIZE, y // CELL_SIZE
             
-            # If this is your first time clicking
-            if selected_cell is None:
-                selected_cell = (row, col)
+            if selected is None:
+                selected = (r, c)
             else:
-                # If it's the second click, try swapping
-                r1, c1 = selected_cell
-                r2, c2 = row, col
-                
-                # Determine if they are adjacent (the sum of their distances is 1 if they are adjacent)
-                if abs(r1 - r2) + abs(c1 - c2) == 1:
-                    # 1. Perform the swap
+                r1, c1 = selected
+                r2, c2 = r, c
+                if abs(r1-r2) + abs(c1-c2) == 1:
+                    # Perform swap animation
+                    animate_swap(r1, c1, r2, c2)
                     grid[r1][c1], grid[r2][c2] = grid[r2][c2], grid[r1][c1]
                     
-                    # 2. Check if it has been eliminated.
-                    matched_cells = check_matches()
-                    if matched_cells:
-                        for (mr, mc) in matched_cells:
-                            grid[mr][mc] = -1 # Mark as disappearing
-                        # Immediately after all eliminated tiles are reduced by 1, perform a drop replenishment
-                        apply_gravity()
+                    if check_matches():
+                        process_matches_and_gravity()
                     else:
-                        # If it's not eliminated, swap it back
+                        animate_swap(r1, c1, r2, c2)
                         grid[r1][c1], grid[r2][c2] = grid[r2][c2], grid[r1][c1]
-                
-                # Reset selection regardless of success or failure
-                selected_cell = None
+                selected = None
+    
+    # Dead End Reset Detection
+    if not has_possible_moves():
+        grid = [[random.randint(0, 3) for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+        process_matches_and_gravity()
 
 pygame.quit()
