@@ -20,12 +20,12 @@ def draw_grid():
         for col in range(GRID_SIZE):
             if grid[row][col] == -1:
                 continue
-            # 1. Calculate the coordinates of the top-left corner of the current cell, used to draw the background line.
+            # 1. Calculate the coordinates of the top-left corner of the current cell, used to draw the background line
             rect_x = col * CELL_SIZE
             rect_y = row * CELL_SIZE
             
             # Draw dark gray grid lines (set the color to (50, 50, 50))
-            # Parameter 1 represents the line width, so only the outline is drawn and no fill is applied.
+            # Parameter 1 represents the line width, so only the outline is drawn and no fill is applied
             pygame.draw.rect(screen, (50, 50, 50), (rect_x, rect_y, CELL_SIZE, CELL_SIZE), 1)
             
             # 2. Calculate the center point of the square shape.
@@ -77,6 +77,22 @@ def check_matches():
                 matches.update([(r, c), (r+1, c), (r+2, c)])
     return list(matches)
 
+def apply_gravity():
+    # Traverse each column
+    for c in range(GRID_SIZE):
+        # Extract all non--1 squares in the current column
+        column_elements = [grid[r][c] for r in range(GRID_SIZE) if grid[r][c] != -1]
+        
+        # Calculate how many new blocks are needed
+        new_elements = [random.randint(0, 3) for _ in range(GRID_SIZE - len(column_elements))]
+        
+        # Merge: The top is the newly generated area, and the bottom is the dropped area
+        new_column = new_elements + column_elements
+        
+        # Write the new column back to grid
+        for r in range(GRID_SIZE):
+            grid[r][c] = new_column[r]
+
 
 # Define variables before the while loop
 selected_cell = None  # Record the first click (row, col)
@@ -101,7 +117,7 @@ while running:
             if selected_cell is None:
                 selected_cell = (row, col)
             else:
-                # If it's the second click, try swapping.
+                # If it's the second click, try swapping
                 r1, c1 = selected_cell
                 r2, c2 = row, col
                 
@@ -115,8 +131,10 @@ while running:
                     if matched_cells:
                         for (mr, mc) in matched_cells:
                             grid[mr][mc] = -1 # Mark as disappearing
+                        # Immediately after all eliminated tiles are reduced by 1, perform a drop replenishment
+                        apply_gravity()
                     else:
-                        # If it's not eliminated, swap it back.
+                        # If it's not eliminated, swap it back
                         grid[r1][c1], grid[r2][c2] = grid[r2][c2], grid[r1][c1]
                 
                 # Reset selection regardless of success or failure
