@@ -18,6 +18,8 @@ def draw_grid():
     # Traverse an 8x8 grid
     for row in range(GRID_SIZE):
         for col in range(GRID_SIZE):
+            if grid[row][col] == -1:
+                continue
             # 1. Calculate the coordinates of the top-left corner of the current cell, used to draw the background line.
             rect_x = col * CELL_SIZE
             rect_y = row * CELL_SIZE
@@ -60,7 +62,22 @@ def draw_grid():
                     py = y + (CELL_SIZE // 3) * math.sin(angle)
                     points.append((px, py))
                 pygame.draw.polygon(screen, color, points)
-            
+
+def check_matches():
+    matches = set()
+    # Lateral inspection
+    for r in range(GRID_SIZE):
+        for c in range(GRID_SIZE - 2):
+            if grid[r][c] != -1 and grid[r][c] == grid[r][c+1] == grid[r][c+2]:
+                matches.update([(r, c), (r, c+1), (r, c+2)])
+    # Vertical inspection
+    for r in range(GRID_SIZE - 2):
+        for c in range(GRID_SIZE):
+            if grid[r][c] != -1 and grid[r][c] == grid[r+1][c] == grid[r+2][c]:
+                matches.update([(r, c), (r+1, c), (r+2, c)])
+    return list(matches)
+
+
 # Define variables before the while loop
 selected_cell = None  # Record the first click (row, col)
 
@@ -90,8 +107,17 @@ while running:
                 
                 # Determine if they are adjacent (the sum of their distances is 1 if they are adjacent)
                 if abs(r1 - r2) + abs(c1 - c2) == 1:
-                    # Swap the positions in the array
+                    # 1. Perform the swap
                     grid[r1][c1], grid[r2][c2] = grid[r2][c2], grid[r1][c1]
+                    
+                    # 2. Check if it has been eliminated.
+                    matched_cells = check_matches()
+                    if matched_cells:
+                        for (mr, mc) in matched_cells:
+                            grid[mr][mc] = -1 # Mark as disappearing
+                    else:
+                        # If it's not eliminated, swap it back.
+                        grid[r1][c1], grid[r2][c2] = grid[r2][c2], grid[r1][c1]
                 
                 # Reset selection regardless of success or failure
                 selected_cell = None
