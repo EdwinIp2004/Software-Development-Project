@@ -15,6 +15,10 @@ COLORS = [
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Match3Game")
+pygame.font.init()
+score = 0
+combo = 0
+score_font = pygame.font.SysFont('Arial', 24, bold=True)
 
 # Initialize the mesh
 grid = [[random.randint(0, 3) for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
@@ -45,6 +49,14 @@ def draw_background(ignore_cells=None):
     """Draw background lines and non-animated blocks"""
     if ignore_cells is None: ignore_cells = []
     screen.fill((30, 30, 30))
+
+    pygame.draw.rect(screen, (0, 0, 0), (0, 0, WIDTH, 50))
+    score_text = score_font.render(f"Score: {score}", True, (255, 255, 255))
+    combo_text = score_font.render(f"Combo: x{combo}", True, (255, 215, 0))
+    screen.blit(score_text, (20, 15))
+    screen.blit(combo_text, (450, 15))
+    
+    
     for r in range(GRID_SIZE):
         for c in range(GRID_SIZE):
             rect_x, rect_y = c * CELL_SIZE, r * CELL_SIZE
@@ -96,10 +108,27 @@ def animate_swap(r1, c1, r2, c2):
         pygame.time.delay(20)
 
 def process_matches_and_gravity():
+    global score, combo  
     """Handling combo, flashing white animation, and falling animations"""
+    current_combo = 0
     while True:
         matched = check_matches()
         if not matched: break
+
+        current_combo += 1
+        combo = current_combo
+        match_count = len(matched)
+        if match_count == 3:
+            add_score = 30
+        elif match_count == 4:
+            add_score = 80
+        elif match_count == 5:
+            add_score = 150
+        else:
+            add_score = 30 * (match_count // 3)  
+        add_score *= current_combo
+        score += add_score
+        
         
        # 1. White flash animation
         draw_background()
