@@ -140,7 +140,7 @@ def draw_background(ignore_cells=None):
     pygame.draw.rect(screen, (0, 0, 0), (0, 0, WIDTH, UI_HEIGHT))
 
     score_text = score_font.render(f"Score: {score}", True, (255, 255, 255))
-    combo_text = score_font.render(f"Combo: x{combo}", True, (255, 215, 0))
+    combo_text = score_font.render(f"Combo: x {combo}", True, (255, 215, 0))
     screen.blit(score_text, (20, 15))
     screen.blit(combo_text, (450, 15))
 
@@ -240,6 +240,11 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        if event.type == pygame.KEYDOWN:
+                # 按下 ESC 键 (K_ESCAPE)退出
+                if event.key == pygame.K_ESCAPE:
+                    running = False
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
