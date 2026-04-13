@@ -2,7 +2,7 @@ import pygame
 import random
 
 # 1. Basic Configuration
-WIDTH, HEIGHT = 600, 600
+WIDTH, HEIGHT = 600, 660
 GRID_SIZE = 8
 CELL_SIZE = WIDTH // GRID_SIZE
 COLORS = [
@@ -45,23 +45,40 @@ def draw_shape(shape_type, x, y, size_scale=1.0):
                         y + (size//2) * pygame.math.Vector2(1, 0).rotate_rad(angle).y))
         pygame.draw.polygon(screen, color, pts)
 
+
+UI_HEIGHT = 60
+
 def draw_background(ignore_cells=None):
     """Draw background lines and non-animated blocks"""
-    if ignore_cells is None: ignore_cells = []
+    if ignore_cells is None: 
+        ignore_cells = []
+    
     screen.fill((30, 30, 30))
 
-    pygame.draw.rect(screen, (0, 0, 0), (0, 0, WIDTH, 50))
+    # --- 1. 绘制顶部 UI 背景栏 ---
+    # 建议加高一点，比如 60，让界面不那么拥挤
+    pygame.draw.rect(screen, (0, 0, 0), (0, 0, WIDTH, UI_HEIGHT))
+    
     score_text = score_font.render(f"Score: {score}", True, (255, 255, 255))
     combo_text = score_font.render(f"Combo: x{combo}", True, (255, 215, 0))
     screen.blit(score_text, (20, 15))
     screen.blit(combo_text, (450, 15))
     
-    
+    # --- 2. 绘制网格 ---
     for r in range(GRID_SIZE):
         for c in range(GRID_SIZE):
-            rect_x, rect_y = c * CELL_SIZE, r * CELL_SIZE
+            # 计算 X 坐标（保持不变）
+            rect_x = c * CELL_SIZE
+            
+            # 计算 Y 坐标（加上 UI_HEIGHT 偏移量）
+            rect_y = r * CELL_SIZE + UI_HEIGHT
+            
+            # 绘制网格线（注意 Y 坐标也要加偏移量）
             pygame.draw.rect(screen, (50, 50, 50), (rect_x, rect_y, CELL_SIZE, CELL_SIZE), 1)
+            
+            # 绘制方块形状
             if (r, c) not in ignore_cells:
+                # 形状中心点 Y 坐标也要加偏移量
                 draw_shape(grid[r][c], rect_x + CELL_SIZE//2, rect_y + CELL_SIZE//2)
 
 # --- Core Algorithm Functions ---
@@ -96,12 +113,23 @@ def animate_swap(r1, c1, r2, c2):
     for i in range(frames + 1):
         p = i / frames
         draw_background(ignore_cells=[(r1, c1), (r2, c2)])
-        # Block 1 coordinates
+        
+        # --- 修改开始 ---
+        
+        # 修改第 1 处：计算 Block 1 的 X 坐标
         x1 = (c1 + (c2 - c1) * p) * CELL_SIZE + CELL_SIZE // 2
-        y1 = (r1 + (r2 - r1) * p) * CELL_SIZE + CELL_SIZE // 2
-        # Block 2 coordinates
+        
+        # 修改第 2 处：计算 Block 1 的 Y 坐标 (添加了 + UI_HEIGHT)
+        y1 = (r1 + (r2 - r1) * p) * CELL_SIZE + CELL_SIZE // 2 + UI_HEIGHT
+        
+        # 修改第 3 处：计算 Block 2 的 X 坐标
         x2 = (c2 + (c1 - c2) * p) * CELL_SIZE + CELL_SIZE // 2
-        y2 = (r2 + (r1 - r2) * p) * CELL_SIZE + CELL_SIZE // 2
+        
+        # 修改第 4 处：计算 Block 2 的 Y 坐标 (添加了 + UI_HEIGHT)
+        y2 = (r2 + (r1 - r2) * p) * CELL_SIZE + CELL_SIZE // 2 + UI_HEIGHT
+        
+        # --- 修改结束 ---
+        
         draw_shape(grid[r1][c1], x1, y1)
         draw_shape(grid[r2][c2], x2, y2)
         pygame.display.flip()
@@ -133,7 +161,8 @@ def process_matches_and_gravity():
        # 1. White flash animation
         draw_background()
         for (r, c) in matched:
-            pygame.draw.rect(screen, (255, 255, 255), (c*CELL_SIZE, r*CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            # 修改：Y坐标加上 UI_HEIGHT
+            pygame.draw.rect(screen, (255, 255, 255), (c*CELL_SIZE, r*CELL_SIZE + UI_HEIGHT, CELL_SIZE, CELL_SIZE))
         pygame.display.flip()
         pygame.time.delay(150)
         
@@ -166,10 +195,18 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         
+        # if event.type == pygame.MOUSEBUTTONDOWN:
+        #     x, y = pygame.mouse.get_pos()
+        #     c, r = x // CELL_SIZE, y // CELL_SIZE
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
-            c, r = x // CELL_SIZE, y // CELL_SIZE
             
+            # 计算点击的网格坐标
+            c = x // CELL_SIZE
+            r = (y - UI_HEIGHT) // CELL_SIZE  # 关键修改：减去 UI_HEIGHT
+
+            
+
             if selected is None:
                 selected = (r, c)
             else:
