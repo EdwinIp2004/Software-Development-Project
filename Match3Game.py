@@ -2,7 +2,7 @@ import pygame
 import random
 
 # 1. Basic Configuration
-WIDTH, HEIGHT = 600, 660  
+WIDTH, HEIGHT = 600, 680
 GRID_SIZE = 8
 CELL_SIZE = WIDTH // GRID_SIZE
 COLORS = [
@@ -20,6 +20,13 @@ pygame.font.init()
 score = 0
 combo = 0
 score_font = pygame.font.SysFont('Arial', 24, bold=True)
+title_font = pygame.font.SysFont('Arial', 48, bold=True)
+
+#Level system:
+level = 1
+moves_left = 20
+target_score = 2000
+game_state = "playing"   # "playing", "level_complete", or "game_over"
 
 def check_matches(grid=None):
     # 未传grid时，自动使用全局grid，100%兼容你原来的调用
@@ -129,7 +136,7 @@ def draw_shape(shape_type, x, y, size_scale=1.0):
                         y + (size/2) * pygame.math.Vector2(1, 0).rotate_rad(angle).y))
         pygame.draw.polygon(screen, color, pts)
 
-UI_HEIGHT = 60
+UI_HEIGHT = 80
 def draw_background(ignore_cells=None):
     """Draw background lines and non-animated blocks"""
     if ignore_cells is None:
@@ -140,16 +147,24 @@ def draw_background(ignore_cells=None):
     pygame.draw.rect(screen, (0, 0, 0), (0, 0, WIDTH, UI_HEIGHT))
 
     score_text = score_font.render(f"Score: {score}", True, (255, 255, 255))
-    combo_text = score_font.render(f"Combo: x {combo}", True, (255, 215, 0))
+    combo_text = score_font.render(f"Combo: x{combo}", True, (255, 215, 0))
     screen.blit(score_text, (20, 15))
     screen.blit(combo_text, (450, 15))
-
+    
+    level_text = score_font.render(f"Level: {level}", True, (255, 255, 255))
+    moves_text = score_font.render(f"Moves: {moves_left}", True, (255, 255, 255))
+    target_text = score_font.render(f"Target: {target_score}", True, (255, 255, 255))
+    screen.blit(level_text, (20, 45))
+    screen.blit(moves_text, (250, 15))
+    screen.blit(target_text, (450, 45))
   
     for r in range(GRID_SIZE):
         for c in range(GRID_SIZE):
             rect_x = c * CELL_SIZE
             rect_y = r * CELL_SIZE + UI_HEIGHT
             pygame.draw.rect(screen, (50, 50, 50), (rect_x, rect_y, CELL_SIZE, CELL_SIZE), 1)
+            if selected is not None and selected == (r, c):    #Selection-highlight
+                pygame.draw.rect(screen, (255, 255, 255), (rect_x, rect_y, CELL_SIZE, CELL_SIZE), 4)
             if (r, c) not in ignore_cells:
                 draw_shape(grid[r][c], rect_x + CELL_SIZE//2, rect_y + CELL_SIZE//2)
 
@@ -235,6 +250,33 @@ running = True
 
 while running:
     draw_background()
+
+     # === Show win or lose message with click instruction ===
+    if game_state == "level_complete":
+        overlay = pygame.Surface((WIDTH, HEIGHT - UI_HEIGHT))
+        overlay.set_alpha(180)
+        overlay.fill((0, 0, 0))
+        screen.blit(overlay, (0, UI_HEIGHT))
+        
+        # Bigger and centered "LEVEL COMPLETE" text
+        txt = title_font.render(f"LEVEL {level} COMPLETE!", True, (0, 255, 0))
+        screen.blit(txt, (WIDTH//2 - txt.get_width()//2, UI_HEIGHT + 230))
+        
+        txt2 = score_font.render("Click anywhere for next level", True, (255, 255, 255))
+        screen.blit(txt2, (WIDTH//2 - txt2.get_width()//2, UI_HEIGHT + 300))
+        
+    elif game_state == "game_over":
+        overlay = pygame.Surface((WIDTH, HEIGHT - UI_HEIGHT))
+        overlay.set_alpha(180)
+        overlay.fill((0, 0, 0))
+        screen.blit(overlay, (0, UI_HEIGHT))
+        
+        txt = title_font.render("GAME OVER", True, (255, 0, 0))
+        screen.blit(txt, (WIDTH//2 - txt.get_width()//2, UI_HEIGHT + 230))
+        
+        txt2 = score_font.render("Click anywhere to restart", True, (255, 255, 255))
+        screen.blit(txt2, (WIDTH//2 - txt2.get_width()//2, UI_HEIGHT + 300))
+
     pygame.display.flip()
 
     for event in pygame.event.get():
@@ -248,6 +290,28 @@ while running:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
+
+            if game_state == "level_complete":
+                
+                level += 1
+                moves_left += 10
+                target_score = 1500 + (level - 1) * 3000 + (level - 1) ** 2 * 500
+                game_state = "playing"
+                continue
+                
+            elif game_state == "game_over":
+                # Full restart
+                level = 1
+                moves_left = 20
+                target_score = 3000
+                score = 0
+                combo = 0
+                grid = generate_valid_grid()
+                game_state = "playing"
+                continue
+            
+            if game_state != "playing":
+                continue
 
             # 计算点击的网格坐标（完全保留你原来的代码，无修改）
             c = x // CELL_SIZE
@@ -263,21 +327,27 @@ while running:
                     animate_swap(r1, c1, r2, c2)
                     grid[r1][c1], grid[r2][c2] = grid[r2][c2], grid[r1][c1]
 
+                    selected = None
                     
-                    if check_matches()[0]:
+                    matched, _ = check_matches()
+                    if matched:
                         process_matches_and_gravity()
+                        moves_left -= 1
+
+                        # Check win or lose
+                        if score >= target_score:
+                            game_state = "level_complete"
+                        elif moves_left <= 0:
+                            game_state = "game_over"
                     else:
                         animate_swap(r1, c1, r2, c2)
                         grid[r1][c1], grid[r2][c2] = grid[r2][c2], grid[r1][c1]
 
-                selected = None
     # ==============================================
-    if not has_possible_moves():
-        # 原来的随机生成，替换成generate_valid_grid
-        # grid = [[random.randint(0, 3) for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
-        # process_matches_and_gravity()
-        grid = generate_valid_grid()
-        score = 0  
-        combo = 0  
+    if game_state == "playing" and not has_possible_moves():
+        if moves_left > 0:
+            grid = generate_valid_grid()   # shuffle only when stuck
+        else:
+            game_state = "game_over"
 
 pygame.quit()
