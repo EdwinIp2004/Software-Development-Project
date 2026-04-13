@@ -50,8 +50,33 @@ def check_matches():
                 matches.update([(r, c), (r+1, c), (r+2, c)])
     return list(matches)
 ```
+**2. Scoring Formula**
 
-2. Match Processing & Gravity
+add_score = 0
+        for length in match_lengths:
+            if length == 3:
+                add_score += 30    
+            elif length == 4:
+                add_score += 80   
+            elif length == 5:
+                add_score += 150   
+            elif length >= 6:
+                add_score += 250   
+    
+        add_score *= current_combo
+    
+        score += add_score
+
+| Match Length | Base Score | With Combo (×2) |
+|--------------|------------|-----------------|
+| 3 gems | 30 | 60 |
+| 4 gems | 80 | 160 |
+| 5 gems | 150 | 300 |
+| 6+ gems | 250 | 500 |
+
+**Formula**: `Total Score = Base Score × Current Combo`
+
+3. Match Processing & Gravity
 Removes matched gems, applies gravity, and refills the grid with new gems. Handling combo, flashing white animation, and falling animations.
 ```python
 def process_matches_and_gravity():
