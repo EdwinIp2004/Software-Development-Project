@@ -3,6 +3,36 @@
 ## Graphical Abstract
 <img width="598" height="692" alt="image" src="https://github.com/user-attachments/assets/b23da503-255d-4fca-9154-815396def52f" />
 
+## How to Play
+**Objective**  
+Match 3 or more identical gems in a row or column to clear them. Reach the target score before you run out of moves.
+
+**Controls**  
+- Click any gem to select it.  
+- Click an adjacent gem to swap them.  
+- Only horizontal or vertical swaps are allowed.  
+- Press **ESC** to quit the game.
+
+**Scoring System**  
+- Base score depends on match length:  
+  - 3 gems → 30 points  
+  - 4 gems → 80 points  
+  - 5 gems → 150 points  
+  - 6+ gems → 250 points  
+- **Combo multiplier**: Every consecutive match in the same cascade multiplies the score (e.g., Combo ×2, ×3, …).  
+- New gems fall from the top after each match.
+
+**Target Score & Level Progression**  
+- Each level has a specific target score that increases with difficulty.  
+- Starting values: Level 1 target = 2000, moves = 20.  
+- After completing a level: moves increase by 10 and target score rises using the formula  
+  `target = 1500 + (level-1)×3000 + (level-1)²×500`.  
+- The game ends when you run out of moves (Game Over).
+
+**Tactics for High Score**  
+- **Chain reactions (combos)** are the key to high scores. Try to create swaps that cause multiple matches in a single cascade.
+- Don't do simple match 3 moves unless you're planning for a big chain reaction.
+- Save powerful longer matches (4+ gems) for moments when they can trigger even bigger combos.
 
 ## 1. Purpose of the Software
 - **Type**: Casual puzzle game (Match-3).
@@ -29,8 +59,8 @@ Each sprint produces a working version of the game that can be tested.
 |--------|-------|--------|
 | 1      | Basic 3 match grid | Completed |
 | 2      | Animation system | Completed |
-| 3      | Scoring system and meun | Completed |
-| 4      | Polish, bug fixing, final assets and testing | Planned |
+| 3      | Scoring system | Completed |
+| 4      | Level system | Completed |
 
 ### Algorithm
 **1. Match Detection & Chain Reaction**  
@@ -52,6 +82,15 @@ def check_matches():
 ```
 **2. Scoring Formula**
 
+| Match Length | Base Score | With Combo (×2) |
+|--------------|------------|-----------------|
+| 3 gems | 30 | 60 |
+| 4 gems | 80 | 160 |
+| 5 gems | 150 | 300 |
+| 6+ gems | 250 | 500 |
+
+**Formula**: `Total Score = Base Score × Current Combo`
+```python
 add_score = 0
         for length in match_lengths:
             if length == 3:
@@ -62,25 +101,13 @@ add_score = 0
                 add_score += 150   
             elif length >= 6:
                 add_score += 250   
-    
         add_score *= current_combo
-    
         score += add_score
-
-| Match Length | Base Score | With Combo (×2) |
-|--------------|------------|-----------------|
-| 3 gems | 30 | 60 |
-| 4 gems | 80 | 160 |
-| 5 gems | 150 | 300 |
-| 6+ gems | 250 | 500 |
-
-**Formula**: `Total Score = Base Score × Current Combo`
-
+```
 3. Match Processing & Gravity
 Removes matched gems, applies gravity, and refills the grid with new gems. Handling combo, flashing white animation, and falling animations.
 ```python
 def process_matches_and_gravity():
-    """Handling combo, flashing white animation, and falling animations"""
     while True:
         matched = check_matches()
         if not matched: break
@@ -89,11 +116,15 @@ def process_matches_and_gravity():
 ```
 
 ### Current Status of The Software
-The pilot/demo version is complete and fully playable. The game has an 8×8 grid with clickable gems, swap mechanics, match detection, removal animations, gravity, and automatic refilling. The core gameplay loop works smoothly.
+- Core gameplay loop - Players click and swap adjacent gems to form matches of 3+ identical shapes
+- Match detection system - Correctly identifies horizontal and vertical matches of 3, 4, 5, or 6+ gems
+- Visual feedback - White flash animation when matches occur, smooth swap animations
+- Selection highlight - White border shows currently selected gem
+- Scoring and level system - Player reach next level when they hit the target score, and game over when no moves left
 
 ### Future Plan
-- Add scoring system and level progression
-- Add main menu, level select, etc.
+- Add leaderboard system and menu
+- Better visual and soundtrack
 
 ## 3. Demo
 - YouTube URL: [FILL IN LATER]
@@ -104,4 +135,5 @@ The pilot/demo version is complete and fully playable. The game has an 8×8 grid
 - Required packages: pygame
 
 ## 5. Declaration
-- [FILL IN LATER]
+- Game engine / libraries: Pygame (open-source library).
+- No other external code was used without declaration.
