@@ -29,7 +29,7 @@ Each sprint produces a working version of the game that can be tested.
 |--------|-------|--------|
 | 1      | Basic 3 match grid | Completed |
 | 2      | Animation system | Completed |
-| 3      | Scoring system and meun | Planned |
+| 3      | Scoring system and meun | Completed |
 | 4      | Polish, bug fixing, final assets and testing | Planned |
 
 ### Algorithm
