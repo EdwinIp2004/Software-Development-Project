@@ -1,7 +1,8 @@
 # SOFTWARE ENGINEERING Project : Match-3 Puzzle Game
 
 ## Graphical Abstract
-*(We will add the image later)*
+<img width="598" height="692" alt="image" src="https://github.com/user-attachments/assets/b23da503-255d-4fca-9154-815396def52f" />
+
 
 ## 1. Purpose of the Software
 - **Type**: Casual puzzle game (Match-3).
