@@ -1,7 +1,7 @@
 # SOFTWARE ENGINEERING Project : Match-3 Puzzle Game
 
 ## Graphical Abstract
-<img width="598" height="692" alt="image" src="https://github.com/user-attachments/assets/b23da503-255d-4fca-9154-815396def52f" />
+<img width="601" height="712" alt="image" src="https://github.com/user-attachments/assets/3f656383-2f90-4569-bcec-1dfdcacc0a15" />
 
 ## How to Play
 **Objective**  
