@@ -49,11 +49,11 @@ Each sprint produces a working version of the game that can be tested.
 ### Members (Roles & Responsibilities & Portion)
 | Name | Role | Responsibilities | Portion |
 |------|------|------------------|---------|
-| [Coder 1] | Coder | Game engineering | 20% |
-| [Coder 2] | Coder | Game engineering | 20% |
-| [Writer 1] | Writer | Documentation & README.md | 20% |
-| [Writer 2] | Writer | Documentation & README.md | 20% |
-| [Video person] | Video & Testing | Demo video + playtesting | 20% |
+| ZHUCHEN YIHAN | Coder | Game engineering (Gravity system, score/combo logic) | 20% |
+| GUO TIANZE | Coder | Game engineering (Level system, UI rendering, animations, shape drawing) | 20% |
+| IP IN CHON] | Writer | Documentation & README.md (Code structure explanation, game mechanics) | 20% |
+| HONG CHIN WA  | Writer | Documentation & README.md (Function documentation, project overview) | 20% |
+| DAI SIWEI | Video & Testing | Demo video + playtesting (balance testing, Bug detection) | 20% |
 
 ### Schedule (Agile Sprints)
 | Sprint | Goals | Status |
@@ -128,7 +128,7 @@ def process_matches_and_gravity():
 - Better visual and soundtrack
 
 ## 3. Demo
-- YouTube URL: [FILL IN LATER]
+- YouTube URL: https://youtu.be/1DGmPvMutso
 
 ## 4. Development & Running Environment
 - Programming language: Python 3 + Pygame
