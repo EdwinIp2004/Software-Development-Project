@@ -49,11 +49,11 @@ Each sprint produces a working version of the game that can be tested.
 ### Members (Roles & Responsibilities & Portion)
 | Name | Role | Responsibilities | Portion |
 |------|------|------------------|---------|
-| ZHUCHEN YIHAN | Coder | Game engineering (Gravity system, score/combo logic) | 20% |
+| ZHUCHEN YIHAN | Coder | Game engineering (Gravity system, Score/Combo logic) | 20% |
 | GUO TIANZE | Coder | Game engineering (Level system, UI rendering, animations, shape drawing) | 20% |
-| IP IN CHON] | Writer | Documentation & README.md (Code structure explanation, game mechanics) | 20% |
-| HONG CHIN WA  | Writer | Documentation & README.md (Function documentation, project overview) | 20% |
-| DAI SIWEI | Video & Testing | Demo video + playtesting (balance testing, Bug detection) | 20% |
+| IP IN CHON] | Writer | Documentation & README.md (Code structure explanation, Game mechanics) | 20% |
+| HONG CHIN WA  | Writer | Documentation & README.md (Function documentation, Project overview) | 20% |
+| DAI SIWEI | Video & Testing | Demo video + playtesting (Balance testing, Bug detection) | 20% |
 
 ### Schedule (Agile Sprints)
 | Sprint | Goals | Status |
