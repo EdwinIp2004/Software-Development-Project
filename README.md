@@ -130,11 +130,19 @@ def process_matches_and_gravity():
 ## 3. Demo
 - YouTube URL: https://youtu.be/1DGmPvMutso
 
-## 4. Development & Running Environment
+## 4. System Requirements
+To ensure the game runs smoothly, please ensure your computer meets the following minimum specifications:
+* **OS:** Windows 10, Windows 11 (macOS and Linux also supported)
+* **Processor:** 1.6GHZ or equivalent
+* **Memory:** 1024MB RAM
+*  **Graphics:** Integrated graphics (e.g., HD Graphics 4000 or above)
+*  **DirectX:** Version 11
+*  **Storage:** 200 MB available spac
+
+## 5. Development & Running Environment
 - Programming language: Python 3 + Pygame
 - Minimum requirements: Any standard laptop with Python 3 installed
 - Required packages: pygame
-
-## 5. Declaration
+## 6. Declaration
 - Game engine / libraries: Pygame (open-source library).
 - No other external code was used without declaration.
